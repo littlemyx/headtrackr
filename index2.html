@@ -1,0 +1,241 @@
+<!doctype html>
+<html lang="en">
+	<head>
+		<title>targets</title>
+		<meta charset="utf-8">
+		<meta http-equiv="X-UA-Compatible" content="IE=Edge"/>
+		<style>
+			body {
+				font-family: Monospace;
+				background-color: #f0f0f0;
+				margin: 0px;
+				overflow: hidden;
+			}
+		</style>
+		<script>
+			// getUserMedia only works over https in Chrome 47+, so we redirect to https. Also notify user if running from file.
+			if (window.location.protocol == "file:") {
+				alert("You seem to be running this example directly from a file. Note that these examples only work when served from a server or localhost due to canvas cross-domain restrictions.");
+			} else if (window.location.hostname !== "localhost" && window.location.protocol !== "https:"){
+				window.location.protocol = "https";
+			}
+		</script>
+		<script type="text/javascript">
+
+      var _gaq = _gaq || [];
+      _gaq.push(['_setAccount', 'UA-32642923-1']);
+      _gaq.push(['_trackPageview']);
+
+      (function() {
+        var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+        ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+        var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+      })();
+
+    </script>
+	</head>
+	<body>
+
+		<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r121/three.min.js"></script>
+		<script >var Stats=function(){var h,a,n=0,o=0,i=Date.now(),u=i,p=i,l=0,q=1E3,r=0,e,j,f,b=[[16,16,48],[0,255,255]],m=0,s=1E3,t=0,d,k,g,c=[[16,48,16],[0,255,0]];h=document.createElement("div");h.style.cursor="pointer";h.style.width="80px";h.style.opacity="0.9";h.style.zIndex="10001";h.addEventListener("mousedown",function(a){a.preventDefault();n=(n+1)%2;n==0?(e.style.display="block",d.style.display="none"):(e.style.display="none",d.style.display="block")},!1);e=document.createElement("div");e.style.textAlign=
+"left";e.style.lineHeight="1.2em";e.style.backgroundColor="rgb("+Math.floor(b[0][0]/2)+","+Math.floor(b[0][1]/2)+","+Math.floor(b[0][2]/2)+")";e.style.padding="0 0 3px 3px";h.appendChild(e);j=document.createElement("div");j.style.fontFamily="Helvetica, Arial, sans-serif";j.style.fontSize="9px";j.style.color="rgb("+b[1][0]+","+b[1][1]+","+b[1][2]+")";j.style.fontWeight="bold";j.innerHTML="FPS";e.appendChild(j);f=document.createElement("div");f.style.position="relative";f.style.width="74px";f.style.height=
+"30px";f.style.backgroundColor="rgb("+b[1][0]+","+b[1][1]+","+b[1][2]+")";for(e.appendChild(f);f.children.length<74;)a=document.createElement("span"),a.style.width="1px",a.style.height="30px",a.style.cssFloat="left",a.style.backgroundColor="rgb("+b[0][0]+","+b[0][1]+","+b[0][2]+")",f.appendChild(a);d=document.createElement("div");d.style.textAlign="left";d.style.lineHeight="1.2em";d.style.backgroundColor="rgb("+Math.floor(c[0][0]/2)+","+Math.floor(c[0][1]/2)+","+Math.floor(c[0][2]/2)+")";d.style.padding=
+"0 0 3px 3px";d.style.display="none";h.appendChild(d);k=document.createElement("div");k.style.fontFamily="Helvetica, Arial, sans-serif";k.style.fontSize="9px";k.style.color="rgb("+c[1][0]+","+c[1][1]+","+c[1][2]+")";k.style.fontWeight="bold";k.innerHTML="MS";d.appendChild(k);g=document.createElement("div");g.style.position="relative";g.style.width="74px";g.style.height="30px";g.style.backgroundColor="rgb("+c[1][0]+","+c[1][1]+","+c[1][2]+")";for(d.appendChild(g);g.children.length<74;)a=document.createElement("span"),
+a.style.width="1px",a.style.height=Math.random()*30+"px",a.style.cssFloat="left",a.style.backgroundColor="rgb("+c[0][0]+","+c[0][1]+","+c[0][2]+")",g.appendChild(a);return{domElement:h,update:function(){i=Date.now();m=i-u;s=Math.min(s,m);t=Math.max(t,m);k.textContent=m+" MS ("+s+"-"+t+")";var a=Math.min(30,30-m/200*30);g.appendChild(g.firstChild).style.height=a+"px";u=i;o++;if(i>p+1E3)l=Math.round(o*1E3/(i-p)),q=Math.min(q,l),r=Math.max(r,l),j.textContent=l+" FPS ("+q+"-"+r+")",a=Math.min(30,30-l/
+100*30),f.appendChild(f.firstChild).style.height=a+"px",p=i,o=0}}};</script>
+		<script >
+    /**
+ * @author alteredq / http://alteredqualia.com/
+ * @author mr.doob / http://mrdoob.com/
+ */
+
+Detector = {
+
+	canvas: !! window.CanvasRenderingContext2D,
+	webgl: ( function () { try { return !! window.WebGLRenderingContext && !! document.createElement( 'canvas' ).getContext( 'experimental-webgl' ); } catch( e ) { return false; } } )(),
+	workers: !! window.Worker,
+	fileapi: window.File && window.FileReader && window.FileList && window.Blob,
+
+	getWebGLErrorMessage: function () {
+
+		var element = document.createElement( 'div' );
+		element.id = 'webgl-error-message';
+		element.style.fontFamily = 'monospace';
+		element.style.fontSize = '13px';
+		element.style.fontWeight = 'normal';
+		element.style.textAlign = 'center';
+		element.style.background = '#fff';
+		element.style.color = '#000';
+		element.style.padding = '1.5em';
+		element.style.width = '400px';
+		element.style.margin = '5em auto 0';
+
+		if ( ! this.webgl ) {
+
+			element.innerHTML = window.WebGLRenderingContext ? [
+				'Your graphics card does not seem to support <a href="http://khronos.org/webgl/wiki/Getting_a_WebGL_Implementation" style="color:#000">WebGL</a>.<br />',
+				'Find out how to get it <a href="http://get.webgl.org/" style="color:#000">here</a>.'
+			].join( '\n' ) : [
+				'Your browser does not seem to support <a href="http://khronos.org/webgl/wiki/Getting_a_WebGL_Implementation" style="color:#000">WebGL</a>.<br/>',
+				'Find out how to get it <a href="http://get.webgl.org/" style="color:#000">here</a>.'
+			].join( '\n' );
+
+		}
+
+		return element;
+
+	},
+
+	addGetWebGLMessage: function ( parameters ) {
+
+		var parent, id, element;
+
+		parameters = parameters || {};
+
+		parent = parameters.parent !== undefined ? parameters.parent : document.body;
+		id = parameters.id !== undefined ? parameters.id : 'oldie';
+
+		element = Detector.getWebGLErrorMessage();
+		element.id = id;
+
+		parent.appendChild( element );
+
+	}
+
+};
+    </script>
+		
+		<script src="./headtrackr.js"></script>
+		
+		<canvas id="compare" width="320" height="240" style="display:none"></canvas>
+		<video id="vid" autoplay loop></video>
+			<button style="margin-left: 100px;" id="startPaly">START</button>
+		<script>
+			if ( ! Detector.webgl ) Detector.addGetWebGLMessage();
+			
+			var videoInput = document.getElementById('vid');
+			var canvasInput = document.getElementById('compare');
+			
+			// 3d model setup
+			
+			var container, stats;
+			var camera, scene, renderer;
+			var plane;
+			
+			function init() {
+
+				container = document.createElement( 'div' );
+				document.body.appendChild( container );
+
+				scene = new THREE.Scene();
+				scene.fog = new THREE.Fog( 0x000000, 1, 5000 );
+		
+				camera = new THREE.PerspectiveCamera( 23, window.innerWidth / window.innerHeight, 1, 100000 );
+				camera.position.z = 6000;
+				scene.add( camera );
+				
+				// Planes
+				
+				//top wall
+				plane1 = new THREE.Mesh( new THREE.PlaneGeometry( 500, 3000, 5, 15 ), new THREE.MeshBasicMaterial( { color: 0xcccccc, wireframe : true } ) );
+				plane1.rotation.x = Math.PI/2;
+				plane1.position.y = 250;
+				plane1.position.z = 50-1500;
+				scene.add( plane1 );
+				
+				//left wall
+				plane2 = new THREE.Mesh( new THREE.PlaneGeometry( 3000, 500, 15, 5 ), new THREE.MeshBasicMaterial( { color: 0xcccccc, wireframe : true } ) );
+				plane2.rotation.y = Math.PI/2;
+				plane2.position.x = -250;
+				plane2.position.z = 50-1500;
+				scene.add( plane2 );
+				
+				//right wall
+				plane3 = new THREE.Mesh( new THREE.PlaneGeometry( 3000, 500, 15, 5 ), new THREE.MeshBasicMaterial( { color: 0xcccccc, wireframe : true	} ) );
+				plane3.rotation.y = -Math.PI/2;
+				plane3.position.x = 250;
+				plane3.position.z = 50-1500;
+				scene.add( plane3 );
+				
+				//bottom wall
+				plane4 = new THREE.Mesh( new THREE.PlaneGeometry( 500, 3000, 5, 15 ), new THREE.MeshBasicMaterial( { color: 0xcccccc, wireframe : true	} ) );
+				plane4.rotation.x = -Math.PI/2;
+				plane4.position.y = -250;
+				plane4.position.z = 50-1500;
+				scene.add( plane4 );
+				
+				// Create sprites with lines
+				
+				var placeTarget = function(x,y,z) {
+						
+						// Cylinder
+						var cylinder = new THREE.Mesh( new THREE.CylinderGeometry(30,30,1,20,1,false), new THREE.MeshBasicMaterial( { color : 0xeeeeee} ) );
+						cylinder.position.x = x;
+						cylinder.rotation.x = Math.PI/2;
+						cylinder.position.y = y;
+						cylinder.position.z = z;
+						scene.add( cylinder );
+						
+						var geometry = new THREE.Geometry();
+						geometry.vertices.push( new THREE.Vector3( 0, 0, -80000 ) );
+						geometry.vertices.push( new THREE.Vector3( 0, 0, z ) );
+						var line = new THREE.Line( geometry, new THREE.LineBasicMaterial( { color: 0xeeeeee } ) );
+						line.position.x = x;
+						line.position.y = y;
+						scene.add( line );
+				}
+								
+				placeTarget(-150,-150,-550);
+				placeTarget(0,-150,-200);
+				placeTarget(100,0,500);
+				placeTarget(-150,100,0);
+				placeTarget(150,-100,-1050);
+				placeTarget(50,0,1100);
+				placeTarget(-50,-50,600);
+				placeTarget(0,150,-2100);
+				placeTarget(-130,0,-700);
+				
+				renderer = new THREE.WebGLRenderer({ clearAlpha: 1 });
+				renderer.setSize( window.innerWidth, window.innerHeight );
+
+				container.appendChild( renderer.domElement );
+				
+			}
+			
+			var stats = new Stats();
+			stats.domElement.style.position = 'absolute';
+			stats.domElement.style.top = '0px';
+			document.body.appendChild( stats.domElement );
+			
+			function animate() {
+
+				renderer.render(scene, camera);
+				stats.update();
+
+				requestAnimationFrame( animate );
+
+			}
+			
+			init();
+			animate();
+			
+			// video styling
+			videoInput.style.position = 'absolute';
+			videoInput.style.top = '50px';
+			videoInput.style.zIndex = '100001';
+			videoInput.style.display = 'block';
+			
+			// set up camera controller
+			headtrackr.controllers.three.realisticAbsoluteCameraControl(camera, 27, [0,0,50], new THREE.Vector3(0,0,0), {damping : 0.5});
+			
+			// Face detection setup
+			var htracker = new headtrackr.Tracker({altVideo : {ogv : "./media/capture5.ogv", mp4 : "./media/capture5.mp4"}});
+			htracker.init(videoInput, canvasInput);
+			htracker.start();
+			
+			document.addEventListener('headtrackingEvent', function(event) {
+				scene.fog = new THREE.Fog( 0x000000, 1+(event.z*27), 3000+(event.z*27) );
+			}, false);
+		</script>
+	</body>
+</html>

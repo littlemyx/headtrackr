@@ -1,18 +1,33 @@
 {
   "name": "headtrackr",
   "description": "headtracking via webcam and WebRTC/getUserMedia",
-  "keywords": ["webcam", "headtracking", "computer vision", "facetracking"],
-  "version": "1.0.2",
-  "author": "Audun Mathias Øygard <amoygard@gmail.com>",
+  "keywords": [
+    "webcam",
+    "headtracking",
+    "computer vision",
+    "facetracking"
+  ],
+  "scripts": {
+    "dev": "rollup -c -w"
+  },
+  "version": "1.1.0",
+  "author": "Andrey Mukhin <littlemyx@gmail.com> (https://631am.com)",
   "repository": {
     "type": "git",
-    "url": "https://github.com/auduno/headtrackr.git"
+    "url": "https://github.com/littlemyx/headtrackr.git"
   },
-  "bugs": "https://github.com/auduno/headtrackr/issues",
+  "bugs": "https://github.com/littlemyx/headtrackr/issues",
   "main": "headtrackr.js",
   "devDependencies": {
+    "@typescript-eslint/eslint-plugin": "^4.3.0",
+    "@typescript-eslint/parser": "^4.3.0",
+    "eslint": "^7.10.0",
     "grunt": "~0.4.2",
     "grunt-contrib-concat": "~0.3.0",
-    "grunt-contrib-uglify": "~0.2.7"
+    "grunt-contrib-uglify": "~0.2.7",
+    "prettier": "2.1.2",
+    "rollup-plugin-typescript": "^1.0.1",
+    "tslib": "^2.0.1",
+    "typescript": "^4.0.3"
   }
 }
