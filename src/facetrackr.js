@@ -1,4 +1,4 @@
-import getWhitebalance from "./Tracker/whitebalance";
+import getWhitebalance from "./FaceTracker/whitebalance";
 
 /**
  * Library for detecting and tracking the position of a face in a canvas object

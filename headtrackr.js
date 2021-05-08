@@ -23734,6 +23734,8 @@
       // new search window size
       _searchWindow.width = Math.floor(1.1 * _trackObj.width);
       _searchWindow.height = Math.floor(1.1 * _trackObj.height);
+
+      // console.log(_searchWindow);
     }
 
     function meanShift(frame) {
@@ -24518,6 +24520,7 @@
       "headtrackingEvent",
       function (event) {
         // update camera
+        // console.log(`x: ${event.x} y: ${event.y} z: ${event.z}`);
         var xOffset = event.x > 0 ? 0 : -event.x * 2 * params.damping * scaling;
         var yOffset = event.y < 0 ? 0 : event.y * 2 * params.damping * scaling;
         camera.setViewOffset(

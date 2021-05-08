@@ -8,7 +8,8 @@
     "facetracking"
   ],
   "scripts": {
-    "dev": "rollup -c -w"
+    "dev": "rollup -c -w",
+    "lint": "eslint ./src/**.ts --quiet --fix"
   },
   "version": "1.1.0",
   "author": "Andrey Mukhin <littlemyx@gmail.com> (https://631am.com)",
@@ -19,9 +20,17 @@
   "bugs": "https://github.com/littlemyx/headtrackr/issues",
   "main": "headtrackr.js",
   "devDependencies": {
-    "@typescript-eslint/eslint-plugin": "^4.3.0",
+    "@rollup/plugin-json": "^4.1.0",
+    "@rollup/plugin-node-resolve": "^13.0.0",
+    "@typescript-eslint/eslint-plugin": "^4.22.0",
     "@typescript-eslint/parser": "^4.3.0",
     "eslint": "^7.10.0",
+    "eslint-config-airbnb-typescript": "^12.3.1",
+    "eslint-config-prettier": "^8.3.0",
+    "eslint-plugin-import": "^2.22.1",
+    "eslint-plugin-jsx-a11y": "^6.4.1",
+    "eslint-plugin-prettier": "^3.4.0",
+    "eslint-plugin-react": "^7.23.2",
     "grunt": "~0.4.2",
     "grunt-contrib-concat": "~0.3.0",
     "grunt-contrib-uglify": "~0.2.7",
@@ -29,5 +38,9 @@
     "rollup-plugin-typescript": "^1.0.1",
     "tslib": "^2.0.1",
     "typescript": "^4.0.3"
+  },
+  "dependencies": {
+    "@types/three": "^0.127.1",
+    "three": "^0.128.0"
   }
 }

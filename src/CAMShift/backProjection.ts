@@ -1,3 +1,4 @@
+/* eslint-disable no-bitwise */
 export default (
   imgData: Uint8ClampedArray,
   idw: number,
@@ -17,9 +18,9 @@ export default (
   // TODO : we could use typed arrays here
   // but we should then do a compatibilitycheck
 
-  for (x = 0; x < idw; x++) {
+  for (x = 0; x < idw; x += 1) {
     a = [];
-    for (y = 0; y < idh; y++) {
+    for (y = 0; y < idh; y += 1) {
       pos = (y * idw + x) * 4;
       r = imgData[pos] >> 4;
       g = imgData[pos + 1] >> 4;

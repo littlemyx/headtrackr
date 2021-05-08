@@ -3,7 +3,11 @@
  * @constructor
  */
 
-function ui() {
+function isCustomEvent(event: Event): event is CustomEvent {
+  return "detail" in event;
+}
+
+export default () => {
   let timeout: number;
 
   // create element and attach to body
@@ -40,21 +44,27 @@ function ui() {
   // function to call messages (and to fade them out after a time)
   document.addEventListener(
     "headtrackrStatus",
-    (event: HeadtrackrStatusEvent) => {
-      if (event.status in StatusMessages) {
+    (event: Event) => {
+      if (!isCustomEvent(event)) {
+        throw new Error("not a custom event");
+      }
+      const {
+        detail: { status },
+      } = event;
+      const messagep = document.getElementById("headtrackerMessage")!;
+      if (status in StatusMessages) {
         window.clearTimeout(timeout);
 
         if (!override) {
-          var messagep = document.getElementById("headtrackerMessage");
           // messagep.innerHTML = StatusMessages[event.status];
           timeout = window.setTimeout(function () {
             messagep.innerHTML = "";
           }, 3000);
         }
-      } else if (event.status in SupportMessages) {
+      } else if (status in SupportMessages) {
         override = true;
         window.clearTimeout(timeout);
-        var messagep = document.getElementById("headtrackerMessage");
+
         // messagep.innerHTML = SupportMessages[event.status];
         window.setTimeout(function () {
           messagep.innerHTML = "added fallback video for demo";
@@ -67,4 +77,4 @@ function ui() {
     },
     true
   );
-}
+};

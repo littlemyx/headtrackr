@@ -1,8 +1,10 @@
+/* eslint-disable no-bitwise */
 import Rectangle from "../Common/Rectangle";
 
 import Histogram from "./Histogram";
 
 import calculateMoments from "./moments";
+import TrackObject from "../TrackObject";
 
 const meanShift = (
   frame: ImageData,
@@ -14,23 +16,31 @@ const meanShift = (
   const w = frame.width;
   const h = frame.height;
 
-  let moments: Moments;
+  const newSearchWindow = new Rectangle(searchWindow);
 
-  var x, y, i, wadx, wady, wadw, wadh;
+  let moments!: Moments;
 
-  var meanShiftIterations = 10; // maximum number of iterations
+  let x;
+  let y;
+  let i;
+  let wadx;
+  let wady;
+  let wadw;
+  let wadh;
+
+  const meanShiftIterations = 10; // maximum number of iterations
 
   // store initial searchwindow
-  var prevx = searchWindow.x;
-  var prevy = searchWindow.y;
+  let prevx = newSearchWindow.x;
+  let prevy = newSearchWindow.y;
 
   // Locate by iteration the maximum of density into the probability distributions
-  for (i = 0; i < meanShiftIterations; i++) {
+  for (i = 0; i < meanShiftIterations; i += 1) {
     // get searchwindow from pdf:
-    wadx = Math.max(searchWindow.x, 0);
-    wady = Math.max(searchWindow.y, 0);
-    wadw = Math.min(wadx + searchWindow.width, w);
-    wadh = Math.min(wady + searchWindow.height, h);
+    wadx = Math.max(newSearchWindow.x, 0);
+    wady = Math.max(newSearchWindow.y, 0);
+    wadw = Math.min(wadx + newSearchWindow.width, w);
+    wadh = Math.min(wady + newSearchWindow.height, h);
 
     moments = calculateMoments(
       pdf,
@@ -38,28 +48,33 @@ const meanShift = (
       wady,
       wadw,
       wadh,
-      i == meanShiftIterations - 1
+      i === meanShiftIterations - 1
     );
     x = moments.xc;
     y = moments.yc;
 
-    searchWindow.x += (x - searchWindow.width / 2) >> 0;
-    searchWindow.y += (y - searchWindow.height / 2) >> 0;
+    newSearchWindow.x += (x - newSearchWindow.width / 2) >> 0;
+    newSearchWindow.y += (y - newSearchWindow.height / 2) >> 0;
 
     // if we have reached maximum density, get second moments and stop iterations
-    if (searchWindow.x == prevx && searchWindow.y == prevy) {
+    if (newSearchWindow.x === prevx && newSearchWindow.y === prevy) {
       moments = calculateMoments(pdf, wadx, wady, wadw, wadh, true);
       break;
     } else {
-      prevx = searchWindow.x;
-      prevy = searchWindow.y;
+      prevx = newSearchWindow.x;
+      prevy = newSearchWindow.y;
     }
   }
 
-  searchWindow.x = Math.max(0, Math.min(searchWindow.x, w));
-  searchWindow.y = Math.max(0, Math.min(searchWindow.y, h));
+  newSearchWindow.x = Math.max(0, Math.min(newSearchWindow.x, w));
+  newSearchWindow.y = Math.max(0, Math.min(newSearchWindow.y, h));
 
-  return { moments, newSearchWindow: searchWindow };
+  return { moments, newSearchWindow };
+};
+
+type CamshiftResult = {
+  trackObject: ITrackObject;
+  searchWindow: Rectangle;
 };
 
 export default (
@@ -68,23 +83,14 @@ export default (
   globalSearchWindow: Rectangle,
   pdf: PixelProbability,
   shouldCalcAngles: boolean = true
-): TrackObject => {
-  const trackObj: TrackObject = {
-    width: null,
-    height: null,
-    x: null,
-    y: null,
-    angle: null,
-    confidence: 1,
-    time: new Date().getTime(),
-    detection: DetectionTypes.CS,
-  };
-  let w = frame.width;
-  let h = frame.height;
-  let searchWindow = globalSearchWindow.clone();
+): CamshiftResult => {
+  const trackObj: ITrackObject = new TrackObject();
+  const w = frame.width;
+  const h = frame.height;
+  const searchWindow = globalSearchWindow.clone();
 
   // search location
-  let {
+  const {
     moments,
     newSearchWindow,
   }: { moments: Moments; newSearchWindow: Rectangle } = meanShift(
@@ -93,14 +99,14 @@ export default (
     searchWindow
   );
 
-  var a = moments.mu20 * moments.invM00;
-  var c = moments.mu02 * moments.invM00;
+  const a = moments.mu20 * moments.invM00;
+  const c = moments.mu02 * moments.invM00;
 
   if (shouldCalcAngles) {
     // use moments to find size and orientation
-    var b = moments.mu11 * moments.invM00;
-    var d = a + c;
-    var e = Math.sqrt(4 * b * b + (a - c) * (a - c));
+    const b = moments.mu11 * moments.invM00;
+    const d = a + c;
+    const e = Math.sqrt(4 * b * b + (a - c) * (a - c));
 
     // update object position
     trackObj.width = Math.sqrt((d - e) * 0.5) << 2;
@@ -108,7 +114,7 @@ export default (
     trackObj.angle = Math.atan2(2 * b, a - c + e);
 
     // to have a positive counter clockwise angle
-    if (trackObj.angle < 0) trackObj.angle = trackObj.angle + Math.PI;
+    if (trackObj.angle < 0) trackObj.angle += Math.PI;
   } else {
     trackObj.width = Math.sqrt(a) << 2;
     trackObj.height = Math.sqrt(c) << 2;
@@ -131,5 +137,9 @@ export default (
 
   trackObj.time = new Date().getTime() - trackObj.time;
 
-  return trackObj;
+  // new search window size
+  newSearchWindow.width = Math.floor(1.1 * trackObj.width);
+  newSearchWindow.height = Math.floor(1.1 * trackObj.height);
+
+  return { trackObject: trackObj, searchWindow: newSearchWindow };
 };

@@ -1,13 +1,8 @@
 export default (canvas: HTMLCanvasElement): number => {
   // returns average gray value in canvas
 
-  let avggray;
-  let avgr;
-  let avgb;
-  let avgg;
-
   const canvasContext = canvas.getContext("2d");
-  const image = canvasContext.getImageData(
+  const image = canvasContext!.getImageData(
     0,
     0,
     canvas.width,
@@ -19,16 +14,16 @@ export default (canvas: HTMLCanvasElement): number => {
   let g = 0;
   let b = 0;
 
-  for (var i = 0; i < imagesize; i++) {
+  for (let i = 0; i < imagesize; i += 1) {
     r += id[4 * i];
     g += id[4 * i + 1];
     b += id[4 * i + 2];
   }
 
-  avgr = r / imagesize;
-  avgg = g / imagesize;
-  avgb = b / imagesize;
-  avggray = (avgr + avgg + avgb) / 3;
+  const avgr = r / imagesize;
+  const avgg = g / imagesize;
+  const avgb = b / imagesize;
+  const avggray = (avgr + avgg + avgb) / 3;
 
   return avggray;
 };

@@ -40,24 +40,30 @@
  */
 
 import Rectangle from "../Common/Rectangle";
-
 import Histogram from "./Histogram";
-
 import camShift from "./camshiftAlgorithm";
 import getBackProjectionData from "./backProjection";
+import TrackObject from "../TrackObject";
 
 export default class Camshift implements ICamshit {
-  private calcAngel: boolean;
-  private _modelHist: Histogram;
-  private _pdf: PixelProbability; // pixel probability data for current searchwindow
-  private _searchWindow: Rectangle; // rectangle where we are searching
-  private _trackObj: TrackObject; // object holding data about where current tracked object is
-  private _canvasCtx: CanvasRenderingContext2D; // canvas context for initial canvas
-  private _canvasw: number; // canvas width for tracking canvas
-  private _canvash: number; // canvas height for tracking canvas
+  private calcAngle: boolean;
 
-  constructor({ calcAngel = true }: { calcAngel?: boolean } = {}) {
-    this.calcAngel = calcAngel;
+  private _modelHist!: Histogram;
+
+  private _pdf!: PixelProbability; // pixel probability data for current searchwindow
+
+  private _searchWindow!: Rectangle; // rectangle where we are searching
+
+  private _trackObj!: ITrackObject; // object holding data about where current tracked object is
+
+  private _canvasCtx!: CanvasRenderingContext2D; // canvas context for initial canvas
+
+  private _canvasw!: number; // canvas width for tracking canvas
+
+  private _canvash!: number; // canvas height for tracking canvas
+
+  constructor({ calcAngles = true }: { calcAngles?: boolean } = {}) {
+    this.calcAngle = calcAngles;
   }
 
   getSearchWindow = (): Rectangle => {
@@ -82,14 +88,14 @@ export default class Camshift implements ICamshit {
     const w = this._canvasw;
     const h = this._canvash;
     const img: ImageData = this._canvasCtx.createImageData(w, h);
-    const imgData: Uint8ClampedArray = img.data; //TODO не совсем понятно что со ссылкой тут будет
+    const imgData: Uint8ClampedArray = img.data; // TODO не совсем понятно что со ссылкой тут будет
     let x: number;
     let y: number;
     let val: number;
     let pos: number;
 
-    for (x = 0; x < w; x++) {
-      for (y = 0; y < h; y++) {
+    for (x = 0; x < w; x += 1) {
+      for (y = 0; y < h; y += 1) {
         val = Math.floor(255 * weights[x][y]);
         pos = (y * w + x) * 4;
         imgData[pos] = val;
@@ -107,7 +113,7 @@ export default class Camshift implements ICamshit {
   ): void => {
     // initialize the tracker with canvas and the area of interest as a rectangle
 
-    this._canvasCtx = canvas.getContext("2d");
+    this._canvasCtx = canvas.getContext("2d")!;
     const taw = trackedArea.width;
     const tah = trackedArea.height;
     const tax = trackedArea.x;
@@ -123,11 +129,11 @@ export default class Camshift implements ICamshit {
     this._searchWindow = trackedArea.clone();
   };
 
-  track = (canvas: HTMLCanvasElement): TrackObject => {
+  track = (canvas: HTMLCanvasElement): ITrackObject => {
     // search the tracked object by camshift
     const canvasCtx: CanvasRenderingContext2D = canvas.getContext(
       "2d"
-    );
+    )!;
 
     this._canvash = canvas.height;
     this._canvasw = canvas.width;
@@ -139,9 +145,9 @@ export default class Camshift implements ICamshit {
       canvas.height
     );
 
-    let trackObject: TrackObject;
+    let trackObject: ITrackObject = new TrackObject();
 
-    if (imgData.width != 0 && imgData.height != 0) {
+    if (imgData.width !== 0 && imgData.height !== 0) {
       const curHist: Histogram = new Histogram(imgData.data);
       const weights: number[] = Histogram.getWeights(
         this._modelHist,
@@ -155,20 +161,23 @@ export default class Camshift implements ICamshit {
         weights
       );
 
-      trackObject = camShift(
+      const {
+        trackObject: camshiftResult,
+        searchWindow: newSearchWindow,
+      } = camShift(
         imgData,
         this._modelHist,
         this._searchWindow,
         this._pdf,
-        this.calcAngel
+        this.calcAngle
       );
 
-      // new search window size
-      this._searchWindow.width = Math.floor(1.1 * trackObject.width);
-      this._searchWindow.height = Math.floor(
-        1.1 * trackObject.height
-      );
+      trackObject = camshiftResult;
+
+      this._searchWindow = newSearchWindow;
     }
+
+    // console.log("search window", this._searchWindow);
 
     return trackObject;
   };

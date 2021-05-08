@@ -24,13 +24,17 @@ export default (
     mu11: 0,
   };
 
-  var i, j, val, vx, vy;
-  var a = [];
-  for (i = x; i < w; i++) {
+  let i;
+  let j;
+  let val;
+  let vx;
+  let vy;
+  let a = [];
+  for (i = x; i < w; i += 1) {
     a = data[i];
     vx = i - x;
 
-    for (j = y; j < h; j++) {
+    for (j = y; j < h; j += 1) {
       val = a[j];
 
       vy = j - y;

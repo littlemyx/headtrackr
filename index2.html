@@ -108,8 +108,8 @@ Detector = {
 		<script src="./headtrackr.js"></script>
 		
 		<canvas id="compare" width="320" height="240" style="display:none"></canvas>
-		<video id="vid" autoplay loop></video>
-			<button style="margin-left: 100px;" id="startPaly">START</button>
+		<video id="vid" autoplay loop playsinline></video>
+			{# <button style="margin-left: 100px;" id="startPaly">START</button> #}
 		<script>
 			if ( ! Detector.webgl ) Detector.addGetWebGLMessage();
 			

@@ -1,3 +1,4 @@
+/* eslint-disable no-bitwise */
 /**
  * RGB histogram
  *
@@ -5,6 +6,7 @@
  */
 export default class Histogram {
   private bins: number[] = [];
+
   private size: number;
 
   constructor(imgdata: Uint8ClampedArray) {
@@ -17,12 +19,12 @@ export default class Histogram {
     let b;
     let il;
 
-    //initialize bins
-    for (i = 0; i < this.size; i++) {
+    // initialize bins
+    for (i = 0; i < this.size; i += 1) {
       this.bins.push(0);
     }
 
-    //add histogram data
+    // add histogram data
     for (x = 0, il = imgdata.length; x < il; x += 4) {
       r = imgdata[x + 0] >> 4; // round down to bins of 16
       g = imgdata[x + 1] >> 4;
@@ -33,12 +35,12 @@ export default class Histogram {
 
   static getWeights(mh: Histogram, ch: Histogram): number[] {
     // Return an array of the probabilities of each histogram color bins
-    var weights: number[] = [];
-    var p;
+    const weights: number[] = [];
+    let p;
 
     // iterate over the entire histogram and compare
-    for (var i = 0; i < 4096; i++) {
-      if (ch.getBin(i) != 0) {
+    for (let i = 0; i < 4096; i += 1) {
+      if (ch.getBin(i) !== 0) {
         p = Math.min(mh.getBin(i) / ch.getBin(i), 1);
       } else {
         p = 0;

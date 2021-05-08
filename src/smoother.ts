@@ -1,3 +1,4 @@
+/* eslint-disable no-bitwise */
 /**
  * Smoother for smoothing tracked positions of face
  *
@@ -20,17 +21,19 @@ interface Position {
 }
 
 export default class Smoother {
-  private sPosition: number[];
-  private sPosition2: number[];
-  private positions: number[];
-  private sLength: number;
-  private position: Position;
-  private newPositions: Position;
-  private initialized: boolean = false;
+  private sPosition: number[] = [];
+
+  private sPosition2: number[] = [];
+
+  private sLength: number = 0;
+
   private interpolate: boolean = false;
 
   private alpha: number;
+
   private interval: number;
+
+  public initialized: boolean = false;
 
   constructor(alpha: number, interval: number) {
     this.alpha = alpha;
@@ -44,98 +47,79 @@ export default class Smoother {
       initialPosition.y,
       initialPosition.z,
       initialPosition.width,
-      initialPosition.height
+      initialPosition.height,
     ];
     this.sPosition2 = this.sPosition;
     this.sLength = this.sPosition.length;
   };
 
-  smooth = (position: Position) => {
-    this.positions = [
+  smooth = (position: Position): Position => {
+    const positions = [
       position.x,
       position.y,
       position.z,
       position.width,
-      position.height
+      position.height,
     ];
 
     if (!this.initialized) {
-      return false;
+      throw new Error("Smoother is not initialized");
     }
-  };
-}
 
-headtrackr.Smoother = function (alpha, interval) {
-  // alpha = 0.35 smoothes ok while not introducing too much lag
-
-  var sp, sp2, sl, newPositions, positions;
-  var updateTime = new Date();
-
-  this.initialized = false;
-
-  // whether to use linear interpolation for times in intervals
-  this.interpolate = false;
-
-  this.init = function (initPos) {
-    this.initialized = true;
-    sp = [initPos.x, initPos.y, initPos.z, initPos.width, initPos.height];
-    sp2 = sp;
-    sl = sp.length;
-  };
-
-  this.smooth = function (pos) {
-    positions = [pos.x, pos.y, pos.z, pos.width, pos.height];
-
-    if (this.initialized) {
-      // update
-      for (var i = 0; i < sl; i++) {
-        sp[i] = alpha * positions[i] + (1 - alpha) * sp[i];
-        sp2[i] = alpha * sp[i] + (1 - alpha) * sp2[i];
-      }
-
-      // set time
-      updateTime = new Date();
-
-      var msDiff = new Date() - updateTime;
-      var newPositions = predict(msDiff);
-
-      pos.x = newPositions[0];
-      pos.y = newPositions[1];
-      pos.z = newPositions[2];
-      pos.width = newPositions[3];
-      pos.height = newPositions[4];
-
-      return pos;
-    } else {
-      return false;
+    // update
+    for (let i = 0; i < this.sLength; i += 1) {
+      this.sPosition[i] =
+        this.alpha * positions[i] +
+        (1 - this.alpha) * this.sPosition[i];
+      this.sPosition2[i] =
+        this.alpha * this.sPosition[i] +
+        (1 - this.alpha) * this.sPosition2[i];
     }
+
+    // set time
+    const updateTime = new Date();
+
+    const msDiff = new Date().getDate() - updateTime.getDate();
+    const newPositions = this.predict(msDiff);
+
+    return {
+      x: newPositions[0],
+      y: newPositions[1],
+      z: newPositions[2],
+      width: newPositions[3],
+      height: newPositions[4],
+    };
   };
 
-  function predict(time) {
-    var retPos = [];
+  predict = (timeDiff: number) => {
+    const returnPosition: number[] = [];
 
     if (this.interpolate) {
-      var step = time / interval;
-      var stepLo = step >> 0;
-      var ratio = alpha / (1 - alpha);
+      const step = timeDiff / this.interval;
+      const stepLo = step >> 0;
+      const ratio = this.alpha / (1 - this.alpha);
 
-      var a = (step - stepLo) * ratio;
-      var b = 2 + stepLo * ratio;
-      var c = 1 + stepLo * ratio;
+      const a = (step - stepLo) * ratio;
+      const b = 2 + stepLo * ratio;
+      const c = 1 + stepLo * ratio;
 
-      for (var i = 0; i < sl; i++) {
-        retPos[i] = a * (sp[i] - sp2[i]) + b * sp[i] - c * sp2[i];
+      for (let i = 0; i < this.sLength; i += 1) {
+        returnPosition[i] =
+          a * (this.sPosition[i] - this.sPosition2[i]) +
+          b * this.sPosition[i] -
+          c * this.sPosition2[i];
       }
     } else {
-      var step = (time / interval) >> 0;
-      var ratio = (alpha * step) / (1 - alpha);
-      var a = 2 + ratio;
-      var b = 1 + ratio;
-      for (var i = 0; i < sl; i++) {
-        retPos[i] = a * sp[i] - b * sp2[i];
+      const step = (timeDiff / this.interval) >> 0;
+      const ratio = (this.alpha * step) / (1 - this.alpha);
+      const a = 2 + ratio;
+      const b = 1 + ratio;
+      for (let i = 0; i < this.sLength; i += 1) {
+        returnPosition[i] =
+          a * this.sPosition[i] - b * this.sPosition2[i];
       }
     }
 
-    return retPos;
-  }
-};
+    return returnPosition;
+  };
+}

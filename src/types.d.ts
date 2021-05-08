@@ -12,12 +12,6 @@ declare enum SupportMessages {
   "no camera" = "no camera found :(",
 }
 
-declare enum DetectionTypes {
-  WB,
-  CS,
-  VJ,
-}
-
 declare type Messages = StatusMessages | SupportMessages;
 
 type StatusMessagesStrings = keyof typeof StatusMessages;
@@ -28,6 +22,8 @@ interface HeadtrackrStatusEvent extends Event {
 }
 
 type PixelProbability = number[][];
+
+type DetectionTypes = "WB" | "CS" | "VJ";
 
 type Moments = {
   m00: number;
@@ -55,7 +51,7 @@ interface IRectangle {
   clone(): IRectangle;
 }
 
-type TrackObject = {
+interface ITrackObject {
   width: number;
   height: number;
   x: number;
@@ -65,15 +61,49 @@ type TrackObject = {
   time: number;
   detection: DetectionTypes;
   wb?: number;
-};
+  clone(): ITrackObject;
+}
+interface IPoint {
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+  neighbors: number;
+  confidence: number;
+}
 
 interface ICamshit {
   getSearchWindow(): IRectangle;
   getPixelProbability(): PixelProbability;
   getBackProjectionImg(): ImageData;
+  getTrackObj(): ITrackObject;
   initTracker(
     canvas: HTMLCanvasElement,
     trackedArea: IRectangle
   ): void;
-  track(canvas: HTMLCanvasElement): TrackObject;
+  track(canvas: HTMLCanvasElement): ITrackObject;
+}
+
+type ClassifierFeature = {
+  size: number;
+  px: number[];
+  py?: number[];
+  pz: number[];
+  nx: number[];
+  ny?: number[];
+  nz: number[];
+};
+
+type StageClassifier = {
+  count: number;
+  threshold: number;
+  feature: ClassifierFeature[];
+  alpha: number[];
+};
+
+interface ICascade {
+  count: number;
+  width: number;
+  height: number;
+  stage_classifier: StageClassifier[];
 }

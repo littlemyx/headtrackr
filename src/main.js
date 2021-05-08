@@ -1,4 +1,4 @@
-import getWhitebalance from "./Tracker/whitebalance";
+import getWhitebalance from "./FaceTracker/whitebalance";
 
 /**
  * Wrapper for headtrackr library
